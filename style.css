@@ -6,7 +6,7 @@
     margin: 0;
     padding: 0;
     user-select: none; 
-    -webkit-tap-highlight-color: transparent; /* Rimuove il flash blu al tocco su mobile */
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -16,7 +16,7 @@ body {
     justify-content: center;
     align-items: center;
     font-family: 'Roboto Mono', monospace;
-    overflow-x: hidden; /* Evita scroll orizzontali del body */
+    overflow-x: hidden;
 }
 
 #paintCanvas {
@@ -43,7 +43,7 @@ body {
     background: #2b2b2b;
     border-radius: 12px;
     padding: 20px;
-    transform: rotateX(5deg); /* Ridotto per mobile per migliorare la precisione del tocco */
+    transform: rotateX(5deg);
     box-shadow: 
         0 10px 0 #1a1a1a, 
         0 20px 40px rgba(0,0,0,0.6), 
@@ -128,6 +128,7 @@ body {
     font-size: 0.7rem;
     box-shadow: 0 4px 0 #8c1b1b;
     cursor: pointer;
+    touch-action: manipulation;
 }
 
 .transport-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #8c1b1b; }
@@ -153,7 +154,7 @@ body {
     color: #b0bec5;
     font-size: 0.7rem;
     box-shadow: 0 4px 0 #263238;
-    touch-action: manipulation; /* Ottimizza il tocco */
+    touch-action: none; /* Impedisce scroll accidentali mentre si suona */
 }
 
 .drum-pad.active {
@@ -163,16 +164,16 @@ body {
     box-shadow: 0 2px 0 #263238;
 }
 
-/* --- SEQUENCER (MOBILE OPTIMIZED) --- */
+/* --- SEQUENCER --- */
 .sequencer-scroll-area {
-    overflow-x: auto; /* Scroll orizzontale su mobile */
+    overflow-x: auto;
     overflow-y: hidden;
     padding-bottom: 10px;
     -webkit-overflow-scrolling: touch;
 }
 
 .sequencer {
-    min-width: 600px; /* Forza una larghezza minima per permettere lo scroll */
+    min-width: 650px;
 }
 
 .seq-row {
@@ -182,10 +183,11 @@ body {
 }
 
 .row-label {
-    width: 35px;
-    font-size: 0.6rem;
+    width: 40px;
+    font-size: 0.7rem;
     color: #ff9800;
     font-weight: bold;
+    text-align: center;
 }
 
 .steps {
@@ -200,42 +202,44 @@ body {
     background: #444;
     border-radius: 2px;
     box-shadow: 0 2px 0 #222;
+    touch-action: none; /* Cruciale per la regolazione della velocity */
+}
+
+/* FIX: Marker ogni 4 step (1, 5, 9, 13) */
+.step.beat-marker {
+    background: #555;
+}
+
+.step.active {
+    /* Il colore specifico è impostato dinamicamente via JS */
+    z-index: 1;
 }
 
 .step.playhead {
-    border: 1px solid #fff;
-    box-shadow: 0 0 8px #fff;
+    outline: 2px solid #fff;
+    outline-offset: -1px;
+    box-shadow: 0 0 10px #fff;
+    z-index: 2;
 }
 
 .legend {
     font-size: 0.6rem;
-    color: #666;
+    color: #888;
     margin-bottom: 8px;
+    text-align: right;
 }
 
-/* --- MEDIA QUERIES PER SMARTPHONE --- */
+/* --- MOBILE QUERIES --- */
 @media (max-width: 600px) {
-    .scene { padding: 5px; }
-    
     .machine-case {
         padding: 15px 10px;
-        transform: none; /* Rimuoviamo la 3D perspective per facilitare l'uso */
+        transform: none;
     }
-
-    .side-panel { display: none; } /* Nascondiamo i pannelli legno per guadagnare spazio */
-    
+    .side-panel { display: none; }
     .drum-grid {
-        grid-template-columns: repeat(2, 1fr); /* Pad più grandi su mobile */
+        grid-template-columns: repeat(2, 1fr);
     }
-
-    .brand span { display: none; } /* Nascondiamo il sottotitolo se c'è poco spazio */
-    
     .machine-header {
         flex-direction: column;
-        align-items: stretch;
-    }
-
-    .lcd-display {
-        justify-content: center;
     }
 }
