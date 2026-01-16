@@ -2,7 +2,12 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#2b2b2b">
+    
     <meta name="format-detection" content="telephone=no">
     <title>MK-808 Drum Machine</title>
     <link rel="stylesheet" href="style.css">
@@ -31,9 +36,9 @@
                         <input type="number" id="bpmInput" value="120" min="40" max="300" inputmode="decimal">
                     </div>
                     <div class="transport-controls">
-                        <button id="startStopBtn" class="transport-btn">START</button>
-                        <button id="clearBtn" class="transport-btn clear">CLR</button>
-                        <button id="exportBtn" class="transport-btn export">SAVE</button>
+                        <button id="startStopBtn" class="transport-btn" aria-label="Avvia o ferma">START</button>
+                        <button id="clearBtn" class="transport-btn clear" aria-label="Cancella pattern">CLR</button>
+                        <button id="exportBtn" class="transport-btn export" aria-label="Salva file WAV">SAVE</button>
                     </div>
                 </div>
             </header>
@@ -42,35 +47,35 @@
                 <div class="fixed-top-section">
                     <section class="pad-section">
                         <div class="drum-grid">
-                            <button class="drum-pad" data-sound="kick">Kick</button>
-                            <button class="drum-pad" data-sound="snare">Snare</button>
-                            <button class="drum-pad" data-sound="clap">Clap</button>
-                            <button class="drum-pad" data-sound="rim">Rim</button>
-                            <button class="drum-pad" data-sound="closed_hat">C-Hat</button>
-                            <button class="drum-pad" data-sound="open_hat">O-Hat</button>
-                            <button class="drum-pad" data-sound="crash">Crash</button>
-                            <button class="drum-pad" data-sound="perc">Perc 1</button>
+                            <button class="drum-pad" data-sound="kick" aria-label="Kick drum">Kick</button>
+                            <button class="drum-pad" data-sound="snare" aria-label="Snare drum">Snare</button>
+                            <button class="drum-pad" data-sound="clap" aria-label="Clap">Clap</button>
+                            <button class="drum-pad" data-sound="rim" aria-label="Rimshot">Rim</button>
+                            <button class="drum-pad" data-sound="closed_hat" aria-label="Closed Hi-hat">C-Hat</button>
+                            <button class="drum-pad" data-sound="open_hat" aria-label="Open Hi-hat">O-Hat</button>
+                            <button class="drum-pad" data-sound="crash" aria-label="Crash cymbal">Crash</button>
+                            <button class="drum-pad" data-sound="perc" aria-label="Percussion">Perc</button>
                         </div>
                     </section>
 
                     <div class="section-info">
-                        <p class="legend">DRAG STEP: Velocity • TAP LABEL: Change Sound</p>
+                        <p class="legend">SWIPE: Velocity • TAP LABEL: Change Sound</p>
                     </div>
                 </div>
 
                 <section class="sequencer-container">
                     <div class="sequencer-scroll-area">
                         <div class="sequencer">
-                            <div class="seq-row" data-sound="kick"><span class="row-label">BD</span><div class="steps"></div></div>
-                            <div class="seq-row" data-sound="snare"><span class="row-label">SD</span><div class="steps"></div></div>
-                            <div class="seq-row" data-sound="closed_hat"><span class="row-label">CH</span><div class="steps"></div></div>
-                            <div class="seq-row" data-sound="open_hat"><span class="row-label">OH</span><div class="steps"></div></div>
-                            <div class="seq-row" data-sound="clap"><span class="row-label">CP</span><div class="steps"></div></div>
-                            <div class="seq-row" data-sound="rim"><span class="row-label">RS</span><div class="steps"></div></div>
-                            <div class="seq-row" data-sound="crash"><span class="row-label">CY</span><div class="steps"></div></div>
-                            <div class="seq-row" data-sound="perc"><span class="row-label">PC1</span><div class="steps"></div></div>
-                            <div class="seq-row" data-sound="perc2"><span class="row-label">PC2</span><div class="steps"></div></div>
-                            <div class="seq-row" data-sound="tom"><span class="row-label">TM</span><div class="steps"></div></div>
+                            <div class="seq-row" data-sound="kick"><span class="row-label" title="Cambia campione">BD</span><div class="steps"></div></div>
+                            <div class="seq-row" data-sound="snare"><span class="row-label" title="Cambia campione">SD</span><div class="steps"></div></div>
+                            <div class="seq-row" data-sound="closed_hat"><span class="row-label" title="Cambia campione">CH</span><div class="steps"></div></div>
+                            <div class="seq-row" data-sound="open_hat"><span class="row-label" title="Cambia campione">OH</span><div class="steps"></div></div>
+                            <div class="seq-row" data-sound="clap"><span class="row-label" title="Cambia campione">CP</span><div class="steps"></div></div>
+                            <div class="seq-row" data-sound="rim"><span class="row-label" title="Cambia campione">RS</span><div class="steps"></div></div>
+                            <div class="seq-row" data-sound="crash"><span class="row-label" title="Cambia campione">CY</span><div class="steps"></div></div>
+                            <div class="seq-row" data-sound="perc"><span class="row-label" title="Cambia campione">PC1</span><div class="steps"></div></div>
+                            <div class="seq-row" data-sound="perc2"><span class="row-label" title="Cambia campione">PC2</span><div class="steps"></div></div>
+                            <div class="seq-row" data-sound="tom"><span class="row-label" title="Cambia campione">TM</span><div class="steps"></div></div>
                         </div>
                     </div>
                 </section>
@@ -78,6 +83,6 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
 </body>
 </html>
