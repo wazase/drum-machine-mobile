@@ -4,6 +4,19 @@ const pads = document.querySelectorAll(".drum-pad");
 const uploader = document.getElementById("sampleUploader");
 let currentTargetSound = null;
 
+// --- BLOCCO ZOOM E GESTI DI SISTEMA ---
+// Impedisce lo zoom con due dita e il double-tap zoom
+document.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 1) e.preventDefault();
+}, { passive: false });
+
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => {
+    const now = (new Date()).getTime();
+    if (now - lastTouchEnd <= 300) e.preventDefault();
+    lastTouchEnd = now;
+}, false);
+
 // --- SBLOCCO AUDIO MOBILE ---
 const unlockAudio = () => {
     if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -22,7 +35,7 @@ async function loadSample(name) {
         if (!response.ok) return null;
         const arrayBuffer = await response.arrayBuffer();
         return await audioCtx.decodeAudioData(arrayBuffer);
-    } catch (e) { console.warn(`Sound ${name} non caricato.`); return null; }
+    } catch (e) { return null; }
 }
 
 async function loadAllSamples() {
@@ -34,21 +47,21 @@ async function loadAllSamples() {
 }
 loadAllSamples();
 
-// --- GESTIONE UPLOADER (FIX MOBILE) ---
+// --- GESTIONE UPLOADER (FIX DEFINITIVO) ---
 uploader.addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if (file && currentTargetSound) {
         try {
-            const arrayBuffer = await file.arrayBuffer();
+            const arrayBuffer = await file.buffer ? await file.arrayBuffer() : await new Response(file).arrayBuffer();
             buffers[currentTargetSound] = await audioCtx.decodeAudioData(arrayBuffer);
-            alert(`Suono caricato per: ${currentTargetSound.toUpperCase()}`);
-        } catch(err) { alert("Errore nel caricamento del file."); }
+        } catch(err) { console.error("Errore audio format"); }
     }
 });
 
-// Usiamo 'click' invece di 'pointerdown' per garantire l'apertura dell'uploader su iOS/Android
+// Click diretto sulla label per caricare file
 document.querySelectorAll(".row-label").forEach(label => {
     label.addEventListener("click", (e) => {
+        e.stopPropagation(); // Evita conflitti con lo scroll
         currentTargetSound = label.parentElement.dataset.sound;
         uploader.click();
     });
@@ -116,17 +129,17 @@ startBtn.addEventListener("click", () => {
         nextNoteTime = audioCtx.currentTime;
         scheduler();
         startBtn.innerText = "STOP";
-        startBtn.classList.add("playing");
+        startBtn.style.backgroundColor = "#ff9800";
     } else {
         clearTimeout(timerID);
         startBtn.innerText = "START";
-        startBtn.classList.remove("playing");
+        startBtn.style.backgroundColor = "#d32f2f";
         document.querySelectorAll(".step.playhead").forEach(s => s.classList.remove("playhead"));
     }
 });
 
 document.getElementById("clearBtn").addEventListener("click", () => {
-    if(confirm("Vuoi cancellare tutto il pattern?")) {
+    if(confirm("Cancella il pattern?")) {
         document.querySelectorAll(".step").forEach(s => {
             s.classList.remove("active");
             s.dataset.velocity = 100;
@@ -137,20 +150,18 @@ document.getElementById("clearBtn").addEventListener("click", () => {
 
 function updateStepColor(step) {
     const vel = parseInt(step.dataset.velocity);
-    const index = parseInt(step.dataset.index);
     if (!step.classList.contains("active")) {
-        step.style.backgroundColor = (index % 4 === 0) ? "#444" : "#333";
+        const index = parseInt(step.dataset.index);
+        step.style.backgroundColor = (index % 4 === 0) ? "#3a3a3a" : "#2a2a2a";
         step.style.boxShadow = "none";
-        step.style.filter = "none";
     } else {
         let color = vel < 50 ? "#00bcd4" : vel < 100 ? "#ffeb3b" : "#ff2222";
         step.style.backgroundColor = color;
-        step.style.boxShadow = `0 0 ${vel/10}px ${color}`;
-        step.style.filter = `brightness(${0.5 + vel/127})`;
+        step.style.boxShadow = `0 0 ${vel/8}px ${color}`;
     }
 }
 
-// --- LOGICA STEP CON VELOCITY SLIDER (MOBILE FRIENDLY) ---
+// --- CREAZIONE STEP & GESTURE VELOCITY ---
 document.querySelectorAll(".seq-row").forEach(row => {
     const container = row.querySelector(".steps");
     for (let i = 0; i < NUM_STEPS; i++) {
@@ -159,37 +170,33 @@ document.querySelectorAll(".seq-row").forEach(row => {
         step.dataset.index = i;
         step.dataset.velocity = 100;
         
-        let startY, startVel, isDragging = false;
+        let startY, startVel, moved;
 
         step.addEventListener("pointerdown", e => {
             e.preventDefault();
-            step.releasePointerCapture(e.pointerId); // Fix per alcuni Android
             startY = e.clientY;
             startVel = parseInt(step.dataset.velocity);
-            isDragging = false;
+            moved = false;
 
-            const onMove = moveEvent => {
-                const dist = Math.abs(startY - moveEvent.clientY);
-                if (dist > 5) { // Se sposti il dito di 5px, diventa drag della velocity
-                    isDragging = true;
+            const onMove = m => {
+                const diff = startY - m.clientY;
+                if (Math.abs(diff) > 5) {
+                    moved = true;
                     if (!step.classList.contains("active")) step.classList.add("active");
-                    let delta = (startY - moveEvent.clientY) * 1.5; // Moltiplicatore sensibilità
-                    let newVel = Math.min(127, Math.max(1, startVel + delta));
+                    let newVel = Math.min(127, Math.max(1, startVel + diff));
                     step.dataset.velocity = Math.round(newVel);
                     updateStepColor(step);
                 }
             };
 
             const onUp = () => {
-                // Se non c'è stato trascinamento, è un semplice Toggle ON/OFF
-                if (!isDragging) {
+                if (!moved) {
                     step.classList.toggle("active");
                     updateStepColor(step);
                 }
                 window.removeEventListener("pointermove", onMove);
                 window.removeEventListener("pointerup", onUp);
             };
-
             window.addEventListener("pointermove", onMove);
             window.addEventListener("pointerup", onUp);
         });
@@ -207,10 +214,62 @@ pads.forEach(pad => {
     });
 });
 
-// --- EXPORT & CANVAS (Sincronizzati) ---
-// [Le funzioni bufferToWave, exportBtn listener e animate rimangono quelle del blocco precedente per brevità, sono già ottimizzate]
+// --- EXPORT WAV ---
+function bufferToWave(abuffer, len) {
+    let numOfChan = abuffer.numberOfChannels, length = len * numOfChan * 2 + 44, buffer = new ArrayBuffer(length), view = new DataView(buffer),
+    channels = [], i, sample, offset = 0, pos = 0;
+    const setUint32 = (data) => { view.setUint32(offset, data, true); offset += 4; };
+    const setUint16 = (data) => { view.setUint16(offset, data, true); offset += 2; };
+    setUint32(0x46464952); setUint32(length - 8); setUint32(0x45564157);
+    setUint32(0x20746d66); setUint32(16); setUint16(1); setUint16(numOfChan);
+    setUint32(abuffer.sampleRate); setUint32(abuffer.sampleRate * 2 * numOfChan);
+    setUint16(numOfChan * 2); setUint16(16); setUint32(0x61746164); setUint32(length - offset - 4);
+    for(i = 0; i < numOfChan; i++) channels.push(abuffer.getChannelData(i));
+    while(pos < len) {
+        for(i = 0; i < numOfChan; i++) {
+            for(i = 0; i < numOfChan; i++) {
+                sample = Math.max(-1, Math.min(1, channels[i][pos]));
+                sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767)|0;
+                view.setInt16(offset, sample, true); offset += 2;
+            }
+        }
+        pos++;
+    }
+    return new Blob([buffer], { type: "audio/wav" });
+}
 
-// --- CANVAS RE-INIT ---
+document.getElementById("exportBtn").addEventListener("click", async () => {
+    const btn = document.getElementById("exportBtn");
+    const originalText = btn.innerText;
+    btn.innerText = "...";
+    const bpm = parseInt(document.getElementById("bpmInput").value);
+    const stepTime = (60 / bpm) / 4;
+    const offCtx = new OfflineAudioContext(2, 44100 * stepTime * 16 * 4, 44100);
+    
+    document.querySelectorAll(".seq-row").forEach(row => {
+        const buf = buffers[row.dataset.sound];
+        if (!buf) return;
+        row.querySelectorAll(".step").forEach((step, i) => {
+            if (step.classList.contains("active")) {
+                for (let loop = 0; loop < 4; loop++) {
+                    const src = offCtx.createBufferSource();
+                    const gain = offCtx.createGain();
+                    src.buffer = buf;
+                    gain.gain.value = Math.pow(parseInt(step.dataset.velocity)/127, 2);
+                    src.connect(gain); gain.connect(offCtx.destination);
+                    src.start((i * stepTime) + (loop * stepTime * 16));
+                }
+            }
+        });
+    });
+
+    const rendered = await offCtx.startRendering();
+    const url = URL.createObjectURL(bufferToWave(rendered, rendered.length));
+    const a = document.createElement("a"); a.href = url; a.download = "beat.wav"; a.click();
+    btn.innerText = originalText;
+});
+
+// --- VISUAL ENGINE ---
 const canvas = document.getElementById('paintCanvas');
 const ctx = canvas.getContext('2d');
 const instrumentColors = { kick: '#69ff52', snare: '#18ffff', clap: '#e040fb', rim: '#b2ff59', closed_hat: '#ffff00', open_hat: '#ffab40', crash: '#ffffff', perc: '#ff4081', perc2: '#7c4dff', tom: '#ff9800' };
@@ -222,15 +281,16 @@ function triggerExplosion(sound) {
 }
 
 function animate() {
-    ctx.fillStyle = `rgba(0,0,0,0.15)`; // Scia leggermente più lunga
+    ctx.fillStyle = `rgba(0,0,0,0.2)`;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     if (flashColor.a > 0) {
         ctx.fillStyle = `rgba(${flashColor.r},${flashColor.g},${flashColor.b},${flashColor.a})`;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        flashColor.a -= 0.04; // Dissolvenza più rapida per non appesantire il processore
+        flashColor.a -= 0.05;
     }
     requestAnimationFrame(animate);
 }
+
 window.addEventListener('resize', () => { 
     canvas.width = window.innerWidth; 
     canvas.height = window.innerHeight; 
