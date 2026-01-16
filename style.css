@@ -5,21 +5,21 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    /* Impedisce la selezione blu del testo e dei tasti */
     -webkit-user-select: none;
     user-select: none; 
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
-    /* Gestione touch: disabilita lo zoom nativo per gestirlo via codice */
-    touch-action: none; 
+    /* touch-action: none è troppo restrittivo qui, lo gestiamo nei contenitori */
 }
 
 html, body {
     height: 100%;
     width: 100%;
-    overflow: hidden;
-    position: fixed; /* Blocca il rimbalzo su iOS */
+    overflow: hidden; 
+    position: fixed; 
     background: #000;
+    /* Impedisce il pull-to-refresh e il rimbalzo pagina */
+    overscroll-behavior: none; 
 }
 
 body {
@@ -27,6 +27,7 @@ body {
     justify-content: center;
     align-items: center;
     font-family: 'Roboto Mono', monospace;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 #paintCanvas {
@@ -34,6 +35,7 @@ body {
     top: 0; left: 0;
     width: 100%; height: 100%;
     z-index: -10;
+    pointer-events: none; /* Il canvas non deve intercettare i tocchi */
 }
 
 /* --- WRAPPER E CASE --- */
@@ -44,6 +46,7 @@ body {
     justify-content: center;
     align-items: center;
     padding: 5px;
+    touch-action: none; /* Impedisce lo scroll della pagina intera */
 }
 
 .machine-case {
@@ -53,7 +56,7 @@ body {
     max-width: 1000px;
     background: #2b2b2b;
     border-radius: 12px;
-    padding: 10px;
+    padding: 12px;
     display: flex;
     flex-direction: column;
     box-shadow: 0 10px 40px rgba(0,0,0,0.9);
@@ -63,7 +66,7 @@ body {
 /* VITI ESTETICHE */
 .screw {
     position: absolute;
-    width: 6px; height: 6px;
+    width: 8px; height: 8px;
     background: radial-gradient(circle, #777, #111);
     border-radius: 50%;
     z-index: 10;
@@ -77,33 +80,33 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 5px;
-    padding-bottom: 5px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
     border-bottom: 1px solid #111;
 }
 
-.brand h1 { font-family: 'Orbitron'; color: #eee; font-size: 1rem; line-height: 1; }
-.sub-brand { font-size: 0.45rem; color: #777; font-weight: bold; display: block; }
+.brand h1 { font-family: 'Orbitron'; color: #eee; font-size: clamp(0.9rem, 4vw, 1.2rem); line-height: 1; }
+.sub-brand { font-size: 0.5rem; color: #777; font-weight: bold; display: block; }
 
-.lcd-display { background: #000; border: 1px solid #444; border-radius: 4px; padding: 4px; display: flex; gap: 5px; }
-.lcd-screen { background: #151a15; padding: 2px 4px; border-radius: 2px; text-align: center; }
-.label { font-size: 0.4rem; color: #4aff4a; display: block; }
+.lcd-display { background: #000; border: 1px solid #444; border-radius: 4px; padding: 4px; display: flex; gap: 6px; }
+.lcd-screen { background: #151a15; padding: 2px 6px; border-radius: 2px; text-align: center; }
+.label { font-size: 0.5rem; color: #4aff4a; display: block; }
 
-#bpmInput { background: transparent; border: none; color: #4aff4a; font-family: 'Orbitron'; font-size: 0.9rem; width: 40px; text-align: center; outline: none; }
+#bpmInput { background: transparent; border: none; color: #4aff4a; font-family: 'Orbitron'; font-size: 1rem; width: 45px; text-align: center; outline: none; }
 
-.transport-controls { display: flex; gap: 3px; }
-.transport-btn { padding: 6px 8px; border: none; border-radius: 3px; color: #fff; font-weight: bold; font-size: 0.6rem; box-shadow: 0 3px 0 #111; }
+.transport-controls { display: flex; gap: 4px; }
+.transport-btn { padding: 8px 10px; border: none; border-radius: 4px; color: #fff; font-weight: bold; font-size: 0.65rem; box-shadow: 0 3px 0 #111; cursor: pointer; }
 .transport-btn:active { transform: translateY(2px); box-shadow: none; }
 .transport-btn.clear { background: #444; }
-.transport-btn#startStopBtn { background: #d32f2f; min-width: 55px; }
+.transport-btn#startStopBtn { background: #d32f2f; min-width: 60px; }
 .transport-btn.export { background: #0288d1; }
 
-/* --- INTERFACE --- */
+/* --- INTERFACE GRID --- */
 .interface-grid {
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 0;
+    min-height: 0; /* Necessario per lo scroll flexbox */
 }
 
 .fixed-top-section { flex-shrink: 0; }
@@ -111,27 +114,28 @@ body {
 .drum-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 4px;
-    padding: 5px;
+    gap: 6px;
+    padding: 8px;
     background: #1a1a1a;
-    border-radius: 6px;
-    margin-bottom: 5px;
+    border-radius: 8px;
+    margin-bottom: 8px;
 }
 
 .drum-pad {
-    aspect-ratio: 1.8/1;
+    aspect-ratio: 1.6/1;
     background: #37474f;
     border: none;
-    border-radius: 4px;
+    border-radius: 5px;
     color: #eee;
-    font-size: 0.6rem;
+    font-size: 0.65rem;
     font-weight: bold;
     box-shadow: 0 3px 0 #111;
+    touch-action: none; /* I pad non devono scorrere */
 }
-.drum-pad.active { background: #00bcd4; transform: translateY(2px); box-shadow: none; }
+.drum-pad.active { background: #00bcd4; transform: translateY(2px); box-shadow: none; color: #000; }
 
-.section-info { padding: 2px 0; }
-.legend { font-size: 0.5rem; color: #666; text-align: center; font-weight: bold; }
+.section-info { padding: 4px 0; }
+.legend { font-size: 0.55rem; color: #666; text-align: center; font-weight: bold; text-transform: uppercase; }
 
 /* --- SEQUENCER --- */
 .sequencer-container {
@@ -140,49 +144,53 @@ body {
     flex-direction: column;
     min-height: 0;
     background: #111;
-    border-radius: 6px;
-    padding: 4px;
+    border-radius: 8px;
+    padding: 6px;
+    overflow: hidden;
 }
 
 .sequencer-scroll-area {
     flex: 1;
     overflow-y: auto;
     overflow-x: auto;
-    touch-action: pan-x pan-y; /* Permette lo scroll del sequencer ma blocca il resto */
+    /* Qui permettiamo lo scroll del browser ma gestiamo il tocco nel JS */
+    touch-action: pan-x pan-y; 
+    -webkit-overflow-scrolling: touch;
 }
 
-/* Nasconde scrollbar */
 .sequencer-scroll-area::-webkit-scrollbar { display: none; }
 
 .sequencer { min-width: 650px; }
 
-.seq-row { display: flex; align-items: center; height: 35px; margin-bottom: 2px; }
+.seq-row { display: flex; align-items: center; height: 38px; margin-bottom: 4px; }
 
 .row-label {
-    width: 38px; min-width: 38px; height: 100%;
-    font-size: 0.65rem; color: #ff9800; font-weight: bold;
+    width: 42px; min-width: 42px; height: 100%;
+    font-size: 0.75rem; color: #ff9800; font-weight: bold;
     background: #222; display: flex; justify-content: center; align-items: center;
-    margin-right: 4px; border-radius: 3px; border: 1px solid #333;
+    margin-right: 6px; border-radius: 4px; border: 1px solid #333;
+    touch-action: pan-y; /* Permette lo scroll verticale toccando i nomi strumenti */
 }
 
-.steps { display: grid; grid-template-columns: repeat(16, 1fr); gap: 2px; height: 100%; flex: 1; }
-.step { height: 100%; background: #2a2a2a; border-radius: 2px; }
+.steps { display: grid; grid-template-columns: repeat(16, 1fr); gap: 3px; height: 100%; flex: 1; }
+.step { height: 100%; background: #2a2a2a; border-radius: 3px; transition: background 0.1s ease; }
 .step.beat-marker { background: #3a3a3a; }
-.step.playhead { box-shadow: inset 0 0 0 1.5px #fff; z-index: 2; }
+.step.playhead { box-shadow: inset 0 0 0 2px #fff; z-index: 5; }
 
 /* --- ORIENTAMENTO ORIZZONTALE (LANDSCAPE) --- */
 @media (orientation: landscape) and (max-height: 500px) {
-    .machine-case { flex-direction: row; flex-wrap: wrap; padding: 5px; }
-    .machine-header { width: 100%; margin-bottom: 2px; }
-    .fixed-top-section { width: 30%; height: calc(100% - 40px); }
+    .machine-case { flex-direction: row; flex-wrap: wrap; padding: 8px; }
+    .machine-header { width: 100%; margin-bottom: 4px; height: 45px; }
+    .fixed-top-section { width: 25%; height: calc(100% - 50px); }
     .drum-grid { grid-template-columns: repeat(2, 1fr); height: 90%; margin-bottom: 0; }
-    .sequencer-container { width: 70%; height: calc(100% - 40px); margin-top: 0; margin-left: 5px; }
+    .sequencer-container { width: 75%; height: calc(100% - 50px); margin-top: 0; margin-left: 8px; }
     .drum-pad { aspect-ratio: auto; height: 100%; }
-    .seq-row { height: 28px; }
+    .seq-row { height: 32px; }
     .legend { font-size: 0.45rem; }
+    .brand h1 { font-size: 1rem; }
 }
 
-/* Fix iOS Zoom su input */
+/* Fix iOS Zoom & Input */
 @media (max-width: 600px) {
     input[type="number"] { font-size: 16px !important; }
 }
