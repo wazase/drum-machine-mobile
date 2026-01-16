@@ -1,23 +1,32 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto+Mono:wght@400;700&display=swap');
 
-/* --- RESET E OTTIMIZZAZIONE MOBILE --- */
+/* --- BLOCCO TOTALE SELEZIONE E ZOOM --- */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    /* Impedisce la selezione del testo ovunque */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
     user-select: none; 
+    /* Rimuove il flash blu al tocco su Android/iOS */
     -webkit-tap-highlight-color: transparent;
-    touch-action: pan-x pan-y; /* Permette lo scroll ma previene zoom accidentali */
+    /* Disabilita i menu contestuali di sistema */
+    -webkit-touch-callout: none;
+    /* Impedisce zoom accidentali mantenendo lo scroll */
+    touch-action: pan-x pan-y;
 }
 
 html, body {
-    height: 100%;
-    width: 100%;
-    overflow: hidden; /* Evita rimbalzi fastidiosi su iOS */
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden; /* Blocca la pagina */
+    position: fixed; /* Impedisce lo scroll del body su iOS */
+    background: #000;
 }
 
 body {
-    background: #000;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -32,11 +41,11 @@ body {
     background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
 }
 
-/* --- WRAPPER DI CONTENIMENTO --- */
+/* --- LAYOUT ADATTIVO --- */
 .wrapper {
     width: 100%;
     height: 100%;
-    max-width: 1000px;
+    max-width: 900px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -46,65 +55,63 @@ body {
 .machine-case {
     position: relative;
     width: 100%;
-    max-height: 98vh; /* Non supera mai l'altezza dello schermo */
+    height: auto;
+    max-height: 100%; /* Si adatta all'altezza dello schermo */
     background: #2b2b2b;
     border-radius: 12px;
-    padding: 15px;
+    padding: 12px;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.9);
     border-top: 1px solid #444;
 }
 
-/* --- VITI --- */
+/* VITI */
 .screw {
     position: absolute;
     width: 8px; height: 8px;
-    background: radial-gradient(circle, #777, #222);
+    background: radial-gradient(circle, #777, #111);
     border-radius: 50%;
-    z-index: 10;
+    z-index: 5;
 }
-.tl { top: 8px; left: 8px; } .tr { top: 8px; right: 8px; }
-.bl { bottom: 8px; left: 8px; } .br { bottom: 8px; right: 8px; }
+.tl { top: 6px; left: 6px; } .tr { top: 6px; right: 6px; }
+.bl { bottom: 6px; left: 6px; } .br { bottom: 6px; right: 6px; }
 
-/* --- HEADER --- */
+/* HEADER */
 .machine-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-    padding-bottom: 10px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
     border-bottom: 2px solid #111;
 }
 
 .brand h1 {
     font-family: 'Orbitron', sans-serif;
-    color: #e0e0e0;
-    font-size: 1.2rem;
+    color: #eee;
+    font-size: 1.1rem;
     line-height: 1;
 }
-.sub-brand { font-size: 0.5rem; color: #888; display: block; }
+.sub-brand { font-size: 0.5rem; color: #777; font-weight: bold; }
 
 .lcd-display {
     background: #000;
-    border: 2px solid #444;
-    border-radius: 6px;
-    padding: 5px;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 4px;
     display: flex;
-    gap: 8px;
+    gap: 6px;
 }
 
 .lcd-screen {
-    background: #1a221a;
-    padding: 2px 6px;
-    border-radius: 3px;
+    background: #151a15;
+    padding: 2px 5px;
+    border-radius: 2px;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
-
-.label { font-size: 0.5rem; color: #4aff4a; margin-bottom: -2px; }
 
 #bpmInput {
     background: transparent;
@@ -113,144 +120,126 @@ body {
     font-family: 'Orbitron', monospace;
     font-size: 1rem;
     width: 45px;
-    outline: none;
     text-align: center;
+    outline: none;
 }
-
-.transport-controls { display: flex; gap: 4px; }
 
 .transport-btn {
-    padding: 8px 10px;
+    padding: 6px 8px;
     background: #d32f2f;
     border: none;
-    border-radius: 4px;
+    border-radius: 3px;
     color: #fff;
     font-weight: bold;
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     box-shadow: 0 3px 0 #8c1b1b;
-    cursor: pointer;
 }
 .transport-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #8c1b1b; }
-.transport-btn.clear { background: #555; box-shadow: 0 3px 0 #333; }
+.transport-btn.clear { background: #444; box-shadow: 0 3px 0 #222; }
 .transport-btn.export { background: #0288d1; box-shadow: 0 3px 0 #01579b; }
 
-/* --- GRID INTERFACCIA --- */
+/* GRID INTERFACCIA */
 .interface-grid {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    overflow: hidden; /* Importante per far funzionare lo scroll interno */
+    gap: 8px;
+    flex: 1;
+    min-height: 0; /* Permette lo scroll interno */
 }
 
-.section-header h3 {
-    font-size: 0.7rem;
-    color: #aaa;
-    margin-bottom: 5px;
-    letter-spacing: 1px;
-}
-
-/* --- DRUM PADS --- */
+/* DRUM PADS */
 .drum-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 6px;
+    gap: 4px;
     background: #1a1a1a;
-    padding: 8px;
-    border-radius: 8px;
+    padding: 6px;
+    border-radius: 6px;
 }
 
 .drum-pad {
-    aspect-ratio: 1.2/1; /* Leggermente rettangolari per mobile */
+    aspect-ratio: 1.3/1;
     background: #37474f;
     border: none;
-    border-radius: 4px;
+    border-radius: 3px;
     color: #eee;
-    font-size: 0.6rem;
+    font-size: 0.55rem;
     font-weight: bold;
-    box-shadow: 0 3px 0 #222;
-    touch-action: none;
+    box-shadow: 0 3px 0 #1a252a;
 }
 .drum-pad.active {
     background: #00bcd4;
     color: #000;
     transform: translateY(2px);
-    box-shadow: 0 1px 0 #222;
+    box-shadow: 0 1px 0 #1a252a;
 }
 
-/* --- SEQUENCER --- */
+/* SEQUENCER */
 .sequencer-container {
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    background: #1a1a1a;
-    padding: 8px;
-    border-radius: 8px;
+    background: #111;
+    padding: 6px;
+    border-radius: 6px;
+    flex: 1;
+    min-height: 0;
 }
 
-.legend { font-size: 0.55rem; color: #666; text-align: right; }
+.legend { font-size: 0.5rem; color: #555; text-align: right; margin-bottom: 2px; }
 
 .sequencer-scroll-area {
     overflow-x: auto;
-    overflow-y: auto; /* Permette lo scorrimento verticale delle tracce */
-    margin-top: 5px;
+    overflow-y: auto;
+    flex: 1;
     -webkit-overflow-scrolling: touch;
 }
 
 .sequencer {
-    min-width: 600px; /* Impedisce che gli step diventino invisibili */
+    min-width: 580px; /* Larghezza minima per non schiacciare gli step */
 }
 
 .seq-row {
     display: flex;
     align-items: center;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
 }
 
 .row-label {
-    width: 35px;
-    min-width: 35px;
+    width: 40px;
+    min-width: 40px;
+    height: 32px; /* Area touch fissa e comoda */
     font-size: 0.7rem;
     color: #ff9800;
-    font-weight: bold;
-    text-align: center;
+    font-weight: 700;
     background: #222;
-    margin-right: 5px;
-    border-radius: 2px;
-    padding: 8px 0; /* Area di tocco aumentata */
+    margin-right: 4px;
+    border-radius: 3px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border: 1px solid #333;
 }
 
 .steps {
     display: grid;
     grid-template-columns: repeat(16, 1fr);
-    gap: 3px;
+    gap: 2px;
     flex-grow: 1;
 }
 
 .step {
-    height: 30px;
-    background: #333;
+    height: 32px;
+    background: #2a2a2a;
     border-radius: 2px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
-    touch-action: none;
 }
-
-.step.beat-marker { background: #444; }
-
+.step.beat-marker { background: #3a3a3a; }
 .step.playhead {
-    border: 1px solid #fff;
-    box-shadow: 0 0 8px #fff;
+    box-shadow: inset 0 0 0 1px #fff, 0 0 10px rgba(255,255,255,0.5);
 }
 
-/* --- RESPONSIVITÀ ESTREMA --- */
-@media (max-width: 480px) {
-    .machine-case { padding: 10px 5px; border-radius: 0; }
-    .drum-grid { grid-template-columns: repeat(4, 1fr); }
-    .drum-pad:nth-child(n+9) { display: none; } /* Opzionale: nasconde tom extra su schermi minuscoli */
-    .row-label { width: 30px; font-size: 0.6rem; }
-    .step { height: 25px; }
-}
-
-/* Previene lo zoom su input focus in iOS */
-input[type="number"] {
-    font-size: 16px !important;
+/* --- FIX iOS ZOOM & SCROLL --- */
+@media (max-width: 600px) {
+    .machine-case { border-radius: 0; padding: 8px; }
+    input[type="number"] { font-size: 16px !important; }
 }
