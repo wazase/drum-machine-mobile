@@ -1,0 +1,241 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto+Mono:wght@400;700&display=swap');
+
+/* --- RESET E BASE --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none; 
+    -webkit-tap-highlight-color: transparent; /* Rimuove il flash blu al tocco su mobile */
+}
+
+body {
+    background: #000;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Roboto Mono', monospace;
+    overflow-x: hidden; /* Evita scroll orizzontali del body */
+}
+
+#paintCanvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: -10;
+    background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+}
+
+/* --- CONTENITORE PRINCIPALE --- */
+.scene {
+    perspective: 1200px;
+    padding: 10px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.machine-case {
+    position: relative;
+    width: 100%;
+    max-width: 960px;
+    background: #2b2b2b;
+    border-radius: 12px;
+    padding: 20px;
+    transform: rotateX(5deg); /* Ridotto per mobile per migliorare la precisione del tocco */
+    box-shadow: 
+        0 10px 0 #1a1a1a, 
+        0 20px 40px rgba(0,0,0,0.6), 
+        inset 0 1px 0 rgba(255,255,255,0.2);
+    border-top: 1px solid #333;
+}
+
+/* --- DETTAGLI ESTETICI --- */
+.side-panel {
+    position: absolute;
+    top: 10px; bottom: -10px;
+    width: 20px;
+    background: #5d4037;
+    background-image: linear-gradient(to right, rgba(0,0,0,0.4), transparent);
+    z-index: -1;
+}
+.side-panel.left { left: -20px; border-radius: 8px 0 0 8px; transform: skewY(5deg); }
+.side-panel.right { right: -20px; border-radius: 0 8px 8px 0; transform: skewY(-5deg); }
+
+.screw {
+    position: absolute;
+    width: 10px; height: 10px;
+    background: radial-gradient(circle, #888, #333);
+    border-radius: 50%;
+}
+.tl { top: 8px; left: 8px; } .tr { top: 8px; right: 8px; }
+.bl { bottom: 8px; left: 8px; } .br { bottom: 8px; right: 8px; }
+
+/* --- HEADER E LCD --- */
+.machine-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #111;
+    padding-bottom: 15px;
+}
+
+.brand h1 {
+    font-family: 'Orbitron', sans-serif;
+    color: #e0e0e0;
+    font-size: clamp(1.2rem, 5vw, 2rem);
+    text-transform: uppercase;
+}
+
+.lcd-display {
+    background: #000;
+    border: 3px solid #555;
+    border-radius: 6px;
+    padding: 8px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.lcd-screen {
+    background: #2f3a2f;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+#bpmInput {
+    background: transparent;
+    border: none;
+    color: #4aff4a;
+    font-family: 'Orbitron', monospace;
+    font-size: 1.2rem;
+    width: 60px;
+    outline: none;
+}
+
+.transport-btn {
+    padding: 8px 12px;
+    background: #d32f2f;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    font-weight: bold;
+    font-size: 0.7rem;
+    box-shadow: 0 4px 0 #8c1b1b;
+    cursor: pointer;
+}
+
+.transport-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #8c1b1b; }
+.transport-btn.clear { background: #757575; box-shadow: 0 4px 0 #424242; }
+.transport-btn.export { background: #0288d1; box-shadow: 0 4px 0 #01579b; }
+
+/* --- DRUM PADS --- */
+.drum-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    background: #222;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.drum-pad {
+    aspect-ratio: 1/1;
+    background: #37474f;
+    border: none;
+    border-radius: 6px;
+    color: #b0bec5;
+    font-size: 0.7rem;
+    box-shadow: 0 4px 0 #263238;
+    touch-action: manipulation; /* Ottimizza il tocco */
+}
+
+.drum-pad.active {
+    background: #00bcd4;
+    color: #000;
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #263238;
+}
+
+/* --- SEQUENCER (MOBILE OPTIMIZED) --- */
+.sequencer-scroll-area {
+    overflow-x: auto; /* Scroll orizzontale su mobile */
+    overflow-y: hidden;
+    padding-bottom: 10px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.sequencer {
+    min-width: 600px; /* Forza una larghezza minima per permettere lo scroll */
+}
+
+.seq-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.row-label {
+    width: 35px;
+    font-size: 0.6rem;
+    color: #ff9800;
+    font-weight: bold;
+}
+
+.steps {
+    display: grid;
+    grid-template-columns: repeat(16, 1fr);
+    gap: 4px;
+    flex-grow: 1;
+}
+
+.step {
+    aspect-ratio: 1/1;
+    background: #444;
+    border-radius: 2px;
+    box-shadow: 0 2px 0 #222;
+}
+
+.step.playhead {
+    border: 1px solid #fff;
+    box-shadow: 0 0 8px #fff;
+}
+
+.legend {
+    font-size: 0.6rem;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+/* --- MEDIA QUERIES PER SMARTPHONE --- */
+@media (max-width: 600px) {
+    .scene { padding: 5px; }
+    
+    .machine-case {
+        padding: 15px 10px;
+        transform: none; /* Rimuoviamo la 3D perspective per facilitare l'uso */
+    }
+
+    .side-panel { display: none; } /* Nascondiamo i pannelli legno per guadagnare spazio */
+    
+    .drum-grid {
+        grid-template-columns: repeat(2, 1fr); /* Pad più grandi su mobile */
+    }
+
+    .brand span { display: none; } /* Nascondiamo il sottotitolo se c'è poco spazio */
+    
+    .machine-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .lcd-display {
+        justify-content: center;
+    }
+}
