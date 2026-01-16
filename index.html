@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <meta name="format-detection" content="telephone=no">
     <title>MK-808 Drum Machine</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body oncontextmenu="return false;">
     <canvas id="paintCanvas"></canvas>
 
     <input type="file" id="sampleUploader" accept="audio/*" style="display: none;">
@@ -27,7 +28,7 @@
                 <div class="lcd-display">
                     <div class="lcd-screen">
                         <span class="label">BPM</span>
-                        <input type="number" id="bpmInput" value="120" min="40" max="300">
+                        <input type="number" id="bpmInput" value="120" min="40" max="300" inputmode="decimal">
                     </div>
                     <div class="transport-controls">
                         <button id="startStopBtn" class="transport-btn">START</button>
@@ -59,7 +60,7 @@
                 <section class="sequencer-container">
                     <div class="section-header">
                         <h3>STEP SEQUENCER</h3>
-                        <p class="legend">HOLD & SLIDE: Velocity • TAP LABEL: Change Sound</p>
+                        <p class="legend">DRAG: Velocity • TAP LABEL: Change Sound</p>
                     </div>
                     
                     <div class="sequencer-scroll-area">
