@@ -17,6 +17,8 @@ body {
     align-items: center;
     font-family: 'Roboto Mono', monospace;
     overflow-x: hidden;
+    /* Previene il refresh "pull-to-refresh" e lo scroll elastico su mobile */
+    overscroll-behavior-y: contain;
 }
 
 #paintCanvas {
@@ -114,18 +116,18 @@ body {
     color: #4aff4a;
     font-family: 'Orbitron', monospace;
     font-size: 1.2rem;
-    width: 60px;
+    width: 65px;
     outline: none;
 }
 
 .transport-btn {
-    padding: 8px 12px;
+    padding: 12px 16px; /* Pulsanti leggermente più grandi per dita umane */
     background: #d32f2f;
     border: none;
     border-radius: 4px;
     color: #fff;
     font-weight: bold;
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     box-shadow: 0 4px 0 #8c1b1b;
     cursor: pointer;
     touch-action: manipulation;
@@ -154,7 +156,8 @@ body {
     color: #b0bec5;
     font-size: 0.7rem;
     box-shadow: 0 4px 0 #263238;
-    touch-action: none; /* Impedisce scroll accidentali mentre si suona */
+    touch-action: none; /* Fondamentale per evitare scroll mentre si suona */
+    cursor: pointer;
 }
 
 .drum-pad.active {
@@ -168,50 +171,53 @@ body {
 .sequencer-scroll-area {
     overflow-x: auto;
     overflow-y: hidden;
-    padding-bottom: 10px;
-    -webkit-overflow-scrolling: touch;
+    padding-bottom: 15px;
+    -webkit-overflow-scrolling: touch; /* Momentum scroll per iOS */
+    scrollbar-width: thin;
+    scrollbar-color: #555 #222;
 }
 
 .sequencer {
-    min-width: 650px;
+    min-width: 700px; /* Garantisce che gli step siano grandi abbastanza per il touch */
 }
 
 .seq-row {
     display: flex;
     align-items: center;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
 }
 
 .row-label {
-    width: 40px;
-    font-size: 0.7rem;
+    width: 50px;
+    min-width: 50px;
+    font-size: 0.75rem;
     color: #ff9800;
     font-weight: bold;
     text-align: center;
+    cursor: pointer;
 }
 
 .steps {
     display: grid;
     grid-template-columns: repeat(16, 1fr);
-    gap: 4px;
+    gap: 6px;
     flex-grow: 1;
 }
 
 .step {
     aspect-ratio: 1/1;
+    min-height: 35px; /* Dimensione minima raccomandata per elementi touch */
     background: #444;
-    border-radius: 2px;
+    border-radius: 3px;
     box-shadow: 0 2px 0 #222;
-    touch-action: none; /* Cruciale per la regolazione della velocity */
+    touch-action: none; /* Necessario per il drag della velocity */
 }
 
-/* FIX: Marker ogni 4 step (1, 5, 9, 13) */
 .step.beat-marker {
     background: #555;
 }
 
 .step.active {
-    /* Il colore specifico è impostato dinamicamente via JS */
     z-index: 1;
 }
 
@@ -223,7 +229,7 @@ body {
 }
 
 .legend {
-    font-size: 0.6rem;
+    font-size: 0.65rem;
     color: #888;
     margin-bottom: 8px;
     text-align: right;
@@ -232,14 +238,27 @@ body {
 /* --- MOBILE QUERIES --- */
 @media (max-width: 600px) {
     .machine-case {
-        padding: 15px 10px;
-        transform: none;
+        padding: 15px 8px;
+        transform: none; /* Rimuove prospettiva per massimizzare lo spazio */
+        border-radius: 0;
     }
     .side-panel { display: none; }
+    
     .drum-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(4, 1fr); /* Griglia più densa per mobile */
+        gap: 8px;
     }
+    
     .machine-header {
         flex-direction: column;
+        align-items: stretch;
+    }
+
+    .brand {
+        text-align: center;
+    }
+
+    .lcd-display {
+        justify-content: space-between;
     }
 }
