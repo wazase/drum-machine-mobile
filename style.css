@@ -1,24 +1,27 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto+Mono:wght@400;700&display=swap');
 
-/* --- RESET E BASE --- */
+/* --- RESET E OTTIMIZZAZIONE MOBILE --- */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
     user-select: none; 
     -webkit-tap-highlight-color: transparent;
+    touch-action: pan-x pan-y; /* Permette lo scroll ma previene zoom accidentali */
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden; /* Evita rimbalzi fastidiosi su iOS */
 }
 
 body {
     background: #000;
-    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     font-family: 'Roboto Mono', monospace;
-    overflow-x: hidden;
-    /* Previene il refresh "pull-to-refresh" e lo scroll elastico su mobile */
-    overscroll-behavior-y: contain;
 }
 
 #paintCanvas {
@@ -29,236 +32,225 @@ body {
     background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
 }
 
-/* --- CONTENITORE PRINCIPALE --- */
-.scene {
-    perspective: 1200px;
-    padding: 10px;
+/* --- WRAPPER DI CONTENIMENTO --- */
+.wrapper {
     width: 100%;
+    height: 100%;
+    max-width: 1000px;
     display: flex;
+    align-items: center;
     justify-content: center;
+    padding: 5px;
 }
 
 .machine-case {
     position: relative;
     width: 100%;
-    max-width: 960px;
+    max-height: 98vh; /* Non supera mai l'altezza dello schermo */
     background: #2b2b2b;
     border-radius: 12px;
-    padding: 20px;
-    transform: rotateX(5deg);
-    box-shadow: 
-        0 10px 0 #1a1a1a, 
-        0 20px 40px rgba(0,0,0,0.6), 
-        inset 0 1px 0 rgba(255,255,255,0.2);
-    border-top: 1px solid #333;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    border-top: 1px solid #444;
 }
 
-/* --- DETTAGLI ESTETICI --- */
-.side-panel {
-    position: absolute;
-    top: 10px; bottom: -10px;
-    width: 20px;
-    background: #5d4037;
-    background-image: linear-gradient(to right, rgba(0,0,0,0.4), transparent);
-    z-index: -1;
-}
-.side-panel.left { left: -20px; border-radius: 8px 0 0 8px; transform: skewY(5deg); }
-.side-panel.right { right: -20px; border-radius: 0 8px 8px 0; transform: skewY(-5deg); }
-
+/* --- VITI --- */
 .screw {
     position: absolute;
-    width: 10px; height: 10px;
-    background: radial-gradient(circle, #888, #333);
+    width: 8px; height: 8px;
+    background: radial-gradient(circle, #777, #222);
     border-radius: 50%;
+    z-index: 10;
 }
 .tl { top: 8px; left: 8px; } .tr { top: 8px; right: 8px; }
 .bl { bottom: 8px; left: 8px; } .br { bottom: 8px; right: 8px; }
 
-/* --- HEADER E LCD --- */
+/* --- HEADER --- */
 .machine-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 20px;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
     border-bottom: 2px solid #111;
-    padding-bottom: 15px;
 }
 
 .brand h1 {
     font-family: 'Orbitron', sans-serif;
     color: #e0e0e0;
-    font-size: clamp(1.2rem, 5vw, 2rem);
-    text-transform: uppercase;
+    font-size: 1.2rem;
+    line-height: 1;
 }
+.sub-brand { font-size: 0.5rem; color: #888; display: block; }
 
 .lcd-display {
     background: #000;
-    border: 3px solid #555;
+    border: 2px solid #444;
     border-radius: 6px;
-    padding: 8px;
+    padding: 5px;
     display: flex;
-    gap: 10px;
-    align-items: center;
+    gap: 8px;
 }
 
 .lcd-screen {
-    background: #2f3a2f;
-    padding: 4px 8px;
-    border-radius: 4px;
-    text-align: center;
+    background: #1a221a;
+    padding: 2px 6px;
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
+
+.label { font-size: 0.5rem; color: #4aff4a; margin-bottom: -2px; }
 
 #bpmInput {
     background: transparent;
     border: none;
     color: #4aff4a;
     font-family: 'Orbitron', monospace;
-    font-size: 1.2rem;
-    width: 65px;
+    font-size: 1rem;
+    width: 45px;
     outline: none;
+    text-align: center;
 }
 
+.transport-controls { display: flex; gap: 4px; }
+
 .transport-btn {
-    padding: 12px 16px; /* Pulsanti leggermente più grandi per dita umane */
+    padding: 8px 10px;
     background: #d32f2f;
     border: none;
     border-radius: 4px;
     color: #fff;
     font-weight: bold;
-    font-size: 0.8rem;
-    box-shadow: 0 4px 0 #8c1b1b;
+    font-size: 0.65rem;
+    box-shadow: 0 3px 0 #8c1b1b;
     cursor: pointer;
-    touch-action: manipulation;
+}
+.transport-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #8c1b1b; }
+.transport-btn.clear { background: #555; box-shadow: 0 3px 0 #333; }
+.transport-btn.export { background: #0288d1; box-shadow: 0 3px 0 #01579b; }
+
+/* --- GRID INTERFACCIA --- */
+.interface-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden; /* Importante per far funzionare lo scroll interno */
 }
 
-.transport-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #8c1b1b; }
-.transport-btn.clear { background: #757575; box-shadow: 0 4px 0 #424242; }
-.transport-btn.export { background: #0288d1; box-shadow: 0 4px 0 #01579b; }
+.section-header h3 {
+    font-size: 0.7rem;
+    color: #aaa;
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+}
 
 /* --- DRUM PADS --- */
 .drum-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 10px;
-    background: #222;
-    padding: 12px;
+    gap: 6px;
+    background: #1a1a1a;
+    padding: 8px;
     border-radius: 8px;
-    margin-bottom: 20px;
 }
 
 .drum-pad {
-    aspect-ratio: 1/1;
+    aspect-ratio: 1.2/1; /* Leggermente rettangolari per mobile */
     background: #37474f;
     border: none;
-    border-radius: 6px;
-    color: #b0bec5;
-    font-size: 0.7rem;
-    box-shadow: 0 4px 0 #263238;
-    touch-action: none; /* Fondamentale per evitare scroll mentre si suona */
-    cursor: pointer;
+    border-radius: 4px;
+    color: #eee;
+    font-size: 0.6rem;
+    font-weight: bold;
+    box-shadow: 0 3px 0 #222;
+    touch-action: none;
 }
-
 .drum-pad.active {
     background: #00bcd4;
     color: #000;
     transform: translateY(2px);
-    box-shadow: 0 2px 0 #263238;
+    box-shadow: 0 1px 0 #222;
 }
 
 /* --- SEQUENCER --- */
+.sequencer-container {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #1a1a1a;
+    padding: 8px;
+    border-radius: 8px;
+}
+
+.legend { font-size: 0.55rem; color: #666; text-align: right; }
+
 .sequencer-scroll-area {
     overflow-x: auto;
-    overflow-y: hidden;
-    padding-bottom: 15px;
-    -webkit-overflow-scrolling: touch; /* Momentum scroll per iOS */
-    scrollbar-width: thin;
-    scrollbar-color: #555 #222;
+    overflow-y: auto; /* Permette lo scorrimento verticale delle tracce */
+    margin-top: 5px;
+    -webkit-overflow-scrolling: touch;
 }
 
 .sequencer {
-    min-width: 700px; /* Garantisce che gli step siano grandi abbastanza per il touch */
+    min-width: 600px; /* Impedisce che gli step diventino invisibili */
 }
 
 .seq-row {
     display: flex;
     align-items: center;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .row-label {
-    width: 50px;
-    min-width: 50px;
-    font-size: 0.75rem;
+    width: 35px;
+    min-width: 35px;
+    font-size: 0.7rem;
     color: #ff9800;
     font-weight: bold;
     text-align: center;
-    cursor: pointer;
+    background: #222;
+    margin-right: 5px;
+    border-radius: 2px;
+    padding: 8px 0; /* Area di tocco aumentata */
 }
 
 .steps {
     display: grid;
     grid-template-columns: repeat(16, 1fr);
-    gap: 6px;
+    gap: 3px;
     flex-grow: 1;
 }
 
 .step {
-    aspect-ratio: 1/1;
-    min-height: 35px; /* Dimensione minima raccomandata per elementi touch */
-    background: #444;
-    border-radius: 3px;
-    box-shadow: 0 2px 0 #222;
-    touch-action: none; /* Necessario per il drag della velocity */
+    height: 30px;
+    background: #333;
+    border-radius: 2px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    touch-action: none;
 }
 
-.step.beat-marker {
-    background: #555;
-}
-
-.step.active {
-    z-index: 1;
-}
+.step.beat-marker { background: #444; }
 
 .step.playhead {
-    outline: 2px solid #fff;
-    outline-offset: -1px;
-    box-shadow: 0 0 10px #fff;
-    z-index: 2;
+    border: 1px solid #fff;
+    box-shadow: 0 0 8px #fff;
 }
 
-.legend {
-    font-size: 0.65rem;
-    color: #888;
-    margin-bottom: 8px;
-    text-align: right;
+/* --- RESPONSIVITÀ ESTREMA --- */
+@media (max-width: 480px) {
+    .machine-case { padding: 10px 5px; border-radius: 0; }
+    .drum-grid { grid-template-columns: repeat(4, 1fr); }
+    .drum-pad:nth-child(n+9) { display: none; } /* Opzionale: nasconde tom extra su schermi minuscoli */
+    .row-label { width: 30px; font-size: 0.6rem; }
+    .step { height: 25px; }
 }
 
-/* --- MOBILE QUERIES --- */
-@media (max-width: 600px) {
-    .machine-case {
-        padding: 15px 8px;
-        transform: none; /* Rimuove prospettiva per massimizzare lo spazio */
-        border-radius: 0;
-    }
-    .side-panel { display: none; }
-    
-    .drum-grid {
-        grid-template-columns: repeat(4, 1fr); /* Griglia più densa per mobile */
-        gap: 8px;
-    }
-    
-    .machine-header {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .brand {
-        text-align: center;
-    }
-
-    .lcd-display {
-        justify-content: space-between;
-    }
+/* Previene lo zoom su input focus in iOS */
+input[type="number"] {
+    font-size: 16px !important;
 }
