@@ -1,34 +1,34 @@
+/**
+ * MK-808 PROFESSIONAL AUDIO ENGINE & INTERFACE CONTROL
+ * Optimized for Mobile Web Audio API
+ */
+
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const buffers = {};
 const pads = document.querySelectorAll(".drum-pad");
 const uploader = document.getElementById("sampleUploader");
 let currentTargetSound = null;
 
-// --- BLOCCO ZOOM E GESTI DI SISTEMA ---
-// Impedisce lo zoom con due dita e il double-tap zoom
-document.addEventListener('touchstart', (e) => {
-    if (e.touches.length > 1) e.preventDefault();
-}, { passive: false });
+// --- STATE MANAGEMENT ---
+const NUM_STEPS = 16;
+let currentStep = 0;
+let isPlaying = false;
+let nextNoteTime = 0.0;
+let timerID = null;
+const instrumentNames = ["kick", "snare", "clap", "rim", "closed_hat", "open_hat", "crash", "perc", "perc2", "tom"];
 
-let lastTouchEnd = 0;
-document.addEventListener('touchend', (e) => {
-    const now = (new Date()).getTime();
-    if (now - lastTouchEnd <= 300) e.preventDefault();
-    lastTouchEnd = now;
-}, false);
-
-// --- SBLOCCO AUDIO MOBILE ---
-const unlockAudio = () => {
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const buffer = audioCtx.createBuffer(1, 1, 22050);
+// --- AUDIO INITIALIZATION ---
+const unlockAudio = async () => {
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
     const source = audioCtx.createBufferSource();
-    source.buffer = buffer;
+    source.buffer = audioCtx.createBuffer(1, 1, 22050);
     source.connect(audioCtx.destination);
     source.start(0);
 };
-["click", "touchstart"].forEach(evt => window.addEventListener(evt, unlockAudio, { once: true }));
 
-// --- CARICAMENTO CAMPIONI ---
+// Sblocco globale al primo tocco
+window.addEventListener('touchstart', unlockAudio, { once: true, passive: false });
+
 async function loadSample(name) {
     try {
         const response = await fetch(`sounds/${name}.wav`);
@@ -38,65 +38,60 @@ async function loadSample(name) {
     } catch (e) { return null; }
 }
 
-async function loadAllSamples() {
-    const names = ["kick", "snare", "clap", "rim", "closed_hat", "open_hat", "crash", "perc", "perc2", "tom"];
-    for (let name of names) {
+(async function init() {
+    for (let name of instrumentNames) {
         const buf = await loadSample(name);
         if (buf) buffers[name] = buf;
     }
-}
-loadAllSamples();
+})();
 
-// --- GESTIONE UPLOADER (FIX DEFINITIVO) ---
+// --- UPLOADER LOGIC ---
 uploader.addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if (file && currentTargetSound) {
-        try {
-            const arrayBuffer = await file.buffer ? await file.arrayBuffer() : await new Response(file).arrayBuffer();
-            buffers[currentTargetSound] = await audioCtx.decodeAudioData(arrayBuffer);
-        } catch(err) { console.error("Errore audio format"); }
+        const arrayBuffer = await file.arrayBuffer();
+        audioCtx.decodeAudioData(arrayBuffer, (decoded) => {
+            buffers[currentTargetSound] = decoded;
+        });
     }
 });
 
-// Click diretto sulla label per caricare file
 document.querySelectorAll(".row-label").forEach(label => {
     label.addEventListener("click", (e) => {
-        e.stopPropagation(); // Evita conflitti con lo scroll
         currentTargetSound = label.parentElement.dataset.sound;
         uploader.click();
     });
 });
 
-// --- AUDIO ENGINE ---
+// --- ENGINE CORE ---
 function playSample(name, velocity = 1, time = 0) {
     const buffer = buffers[name];
     if (!buffer) return;
     const source = audioCtx.createBufferSource();
     const gainNode = audioCtx.createGain();
+    
+    // Curva di potenza logaritmica (più naturale per l'orecchio umano)
     gainNode.gain.value = Math.pow(velocity, 2);
+    
     source.buffer = buffer;
     source.connect(gainNode);
     gainNode.connect(audioCtx.destination);
     source.start(time || audioCtx.currentTime);
 }
 
-// --- SEQUENCER LOGIC ---
-const NUM_STEPS = 16;
-let currentStep = 0;
-let isPlaying = false;
-let nextNoteTime = 0.0;
-let timerID;
-
 function scheduler() {
     while (nextNoteTime < audioCtx.currentTime + 0.1) {
         scheduleNote(currentStep, nextNoteTime);
-        advanceNote();
+        const bpm = parseInt(document.getElementById("bpmInput").value) || 120;
+        nextNoteTime += (60.0 / bpm) / 4;
+        currentStep = (currentStep + 1) % NUM_STEPS;
     }
     timerID = setTimeout(scheduler, 25);
 }
 
 function scheduleNote(stepIndex, time) {
     const rows = document.querySelectorAll(".seq-row");
+    
     requestAnimationFrame(() => {
         document.querySelectorAll(".step.playhead").forEach(s => s.classList.remove("playhead"));
         rows.forEach(row => {
@@ -108,19 +103,14 @@ function scheduleNote(stepIndex, time) {
     rows.forEach(row => {
         const step = row.querySelectorAll(".step")[stepIndex];
         if (step && step.classList.contains("active")) {
-            playSample(row.dataset.sound, parseInt(step.dataset.velocity) / 127, time);
+            const v = parseInt(step.dataset.velocity) / 127;
+            playSample(row.dataset.sound, v, time);
             triggerExplosion(row.dataset.sound);
         }
     });
 }
 
-function advanceNote() {
-    const bpm = parseInt(document.getElementById("bpmInput").value) || 120;
-    nextNoteTime += (60.0 / bpm) / 4;
-    currentStep = (currentStep + 1) % NUM_STEPS;
-}
-
-// --- INTERFACCIA ---
+// --- INTERFACE INTERACTIONS ---
 const startBtn = document.getElementById("startStopBtn");
 startBtn.addEventListener("click", () => {
     isPlaying = !isPlaying;
@@ -138,8 +128,84 @@ startBtn.addEventListener("click", () => {
     }
 });
 
+function updateStepColor(step) {
+    const vel = parseInt(step.dataset.velocity);
+    if (!step.classList.contains("active")) {
+        const index = parseInt(step.dataset.index);
+        step.style.backgroundColor = (index % 4 === 0) ? "#444" : "#2a2a2a";
+        step.style.boxShadow = "none";
+    } else {
+        const color = vel < 50 ? "#00bcd4" : vel < 100 ? "#ffeb3b" : "#ff2222";
+        step.style.backgroundColor = color;
+        step.style.boxShadow = `0 0 ${vel/10}px ${color}`;
+    }
+}
+
+// --- SMART GESTURE LOGIC (THE "CORE" OF STABILITY) ---
+document.querySelectorAll(".seq-row").forEach(row => {
+    const container = row.querySelector(".steps");
+    for (let i = 0; i < NUM_STEPS; i++) {
+        const step = document.createElement("div");
+        step.className = i % 4 === 0 ? "step beat-marker" : "step";
+        step.dataset.index = i;
+        step.dataset.velocity = 100;
+
+        let startY, startX, startVel, mode = null; // mode: 'drag' | 'scroll'
+
+        step.addEventListener("pointerdown", e => {
+            startY = e.clientY;
+            startX = e.clientX;
+            startVel = parseInt(step.dataset.velocity);
+            mode = null;
+            step.setPointerCapture(e.pointerId);
+        });
+
+        step.addEventListener("pointermove", e => {
+            if (!step.hasPointerCapture(e.pointerId)) return;
+
+            const dx = Math.abs(e.clientX - startX);
+            const dy = Math.abs(e.clientY - startY);
+
+            // Analisi direzione movimento
+            if (!mode && (dx > 5 || dy > 5)) {
+                mode = dy > dx ? 'drag' : 'scroll';
+            }
+
+            if (mode === 'drag') {
+                e.preventDefault();
+                if (!step.classList.contains("active")) step.classList.add("active");
+                const diff = startY - e.clientY;
+                const newVel = Math.min(127, Math.max(1, startVel + diff));
+                step.dataset.velocity = Math.round(newVel);
+                updateStepColor(step);
+            }
+        });
+
+        step.addEventListener("pointerup", e => {
+            if (mode !== 'drag') {
+                step.classList.toggle("active");
+                updateStepColor(step);
+            }
+            step.releasePointerCapture(e.pointerId);
+            mode = null;
+        });
+
+        container.appendChild(step);
+    }
+});
+
+// Pads
+pads.forEach(pad => {
+    pad.addEventListener("pointerdown", e => {
+        playSample(pad.dataset.sound);
+        pad.classList.add("active");
+        setTimeout(() => pad.classList.remove("active"), 100);
+    });
+});
+
+// --- EXPORT & VISUALS ---
 document.getElementById("clearBtn").addEventListener("click", () => {
-    if(confirm("Cancella il pattern?")) {
+    if(confirm("Cancella tutto il pattern?")) {
         document.querySelectorAll(".step").forEach(s => {
             s.classList.remove("active");
             s.dataset.velocity = 100;
@@ -148,73 +214,8 @@ document.getElementById("clearBtn").addEventListener("click", () => {
     }
 });
 
-function updateStepColor(step) {
-    const vel = parseInt(step.dataset.velocity);
-    if (!step.classList.contains("active")) {
-        const index = parseInt(step.dataset.index);
-        step.style.backgroundColor = (index % 4 === 0) ? "#3a3a3a" : "#2a2a2a";
-        step.style.boxShadow = "none";
-    } else {
-        let color = vel < 50 ? "#00bcd4" : vel < 100 ? "#ffeb3b" : "#ff2222";
-        step.style.backgroundColor = color;
-        step.style.boxShadow = `0 0 ${vel/8}px ${color}`;
-    }
-}
+// 
 
-// --- CREAZIONE STEP & GESTURE VELOCITY ---
-document.querySelectorAll(".seq-row").forEach(row => {
-    const container = row.querySelector(".steps");
-    for (let i = 0; i < NUM_STEPS; i++) {
-        const step = document.createElement("div");
-        step.className = i % 4 === 0 ? "step beat-marker" : "step";
-        step.dataset.index = i;
-        step.dataset.velocity = 100;
-        
-        let startY, startVel, moved;
-
-        step.addEventListener("pointerdown", e => {
-            e.preventDefault();
-            startY = e.clientY;
-            startVel = parseInt(step.dataset.velocity);
-            moved = false;
-
-            const onMove = m => {
-                const diff = startY - m.clientY;
-                if (Math.abs(diff) > 5) {
-                    moved = true;
-                    if (!step.classList.contains("active")) step.classList.add("active");
-                    let newVel = Math.min(127, Math.max(1, startVel + diff));
-                    step.dataset.velocity = Math.round(newVel);
-                    updateStepColor(step);
-                }
-            };
-
-            const onUp = () => {
-                if (!moved) {
-                    step.classList.toggle("active");
-                    updateStepColor(step);
-                }
-                window.removeEventListener("pointermove", onMove);
-                window.removeEventListener("pointerup", onUp);
-            };
-            window.addEventListener("pointermove", onMove);
-            window.addEventListener("pointerup", onUp);
-        });
-        container.appendChild(step);
-    }
-});
-
-// --- PADS ---
-pads.forEach(pad => {
-    pad.addEventListener("pointerdown", e => {
-        e.preventDefault();
-        playSample(pad.dataset.sound);
-        pad.classList.add("active");
-        setTimeout(() => pad.classList.remove("active"), 100);
-    });
-});
-
-// --- EXPORT WAV ---
 function bufferToWave(abuffer, len) {
     let numOfChan = abuffer.numberOfChannels, length = len * numOfChan * 2 + 44, buffer = new ArrayBuffer(length), view = new DataView(buffer),
     channels = [], i, sample, offset = 0, pos = 0;
@@ -227,11 +228,9 @@ function bufferToWave(abuffer, len) {
     for(i = 0; i < numOfChan; i++) channels.push(abuffer.getChannelData(i));
     while(pos < len) {
         for(i = 0; i < numOfChan; i++) {
-            for(i = 0; i < numOfChan; i++) {
-                sample = Math.max(-1, Math.min(1, channels[i][pos]));
-                sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767)|0;
-                view.setInt16(offset, sample, true); offset += 2;
-            }
+            sample = Math.max(-1, Math.min(1, channels[i][pos]));
+            sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767)|0;
+            view.setInt16(offset, sample, true); offset += 2;
         }
         pos++;
     }
@@ -240,8 +239,7 @@ function bufferToWave(abuffer, len) {
 
 document.getElementById("exportBtn").addEventListener("click", async () => {
     const btn = document.getElementById("exportBtn");
-    const originalText = btn.innerText;
-    btn.innerText = "...";
+    btn.innerText = "WAIT";
     const bpm = parseInt(document.getElementById("bpmInput").value);
     const stepTime = (60 / bpm) / 4;
     const offCtx = new OfflineAudioContext(2, 44100 * stepTime * 16 * 4, 44100);
@@ -265,11 +263,11 @@ document.getElementById("exportBtn").addEventListener("click", async () => {
 
     const rendered = await offCtx.startRendering();
     const url = URL.createObjectURL(bufferToWave(rendered, rendered.length));
-    const a = document.createElement("a"); a.href = url; a.download = "beat.wav"; a.click();
-    btn.innerText = originalText;
+    const a = document.createElement("a"); a.href = url; a.download = "mk808_beat.wav"; a.click();
+    btn.innerText = "SAVE";
 });
 
-// --- VISUAL ENGINE ---
+// --- CANVAS VISUALS ---
 const canvas = document.getElementById('paintCanvas');
 const ctx = canvas.getContext('2d');
 const instrumentColors = { kick: '#69ff52', snare: '#18ffff', clap: '#e040fb', rim: '#b2ff59', closed_hat: '#ffff00', open_hat: '#ffab40', crash: '#ffffff', perc: '#ff4081', perc2: '#7c4dff', tom: '#ff9800' };
