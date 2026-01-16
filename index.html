@@ -2,8 +2,8 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Drum Machine MK-808</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <title>MK-808 Drum Machine</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,11 +11,8 @@
 
     <input type="file" id="sampleUploader" accept="audio/*" style="display: none;">
 
-    <div class="scene">
+    <div class="wrapper">
         <div class="machine-case">
-            <div class="side-panel left"></div>
-            <div class="side-panel right"></div>
-            
             <div class="screw tl"></div>
             <div class="screw tr"></div>
             <div class="screw bl"></div>
@@ -24,7 +21,7 @@
             <header class="machine-header">
                 <div class="brand">
                     <h1>MK-808</h1>
-                    <span>RHYTHM COMPOSER</span>
+                    <span class="sub-brand">RHYTHM COMPOSER</span>
                 </div>
                 
                 <div class="lcd-display">
@@ -34,7 +31,7 @@
                     </div>
                     <div class="transport-controls">
                         <button id="startStopBtn" class="transport-btn">START</button>
-                        <button id="clearBtn" class="transport-btn clear">CLEAR</button>
+                        <button id="clearBtn" class="transport-btn clear">CLR</button>
                         <button id="exportBtn" class="transport-btn export">SAVE</button>
                     </div>
                 </div>
@@ -42,78 +39,41 @@
 
             <main class="interface-grid">
                 <section class="pad-section">
-                    <h3>DRUM PADS</h3>
+                    <div class="section-header">
+                        <h3>DRUM PADS</h3>
+                    </div>
                     <div class="drum-grid">
-                        <button class="drum-pad" data-sound="kick" data-key="81">Kick (Q)</button>
-                        <button class="drum-pad" data-sound="snare" data-key="87">Snare (W)</button>
-                        <button class="drum-pad" data-sound="clap" data-key="69">Clap (E)</button>
-                        <button class="drum-pad" data-sound="rim" data-key="82">Rim (R)</button>
-
-                        <button class="drum-pad" data-sound="closed_hat" data-key="65">C-Hat (A)</button>
-                        <button class="drum-pad" data-sound="open_hat" data-key="83">O-Hat (S)</button>
-                        <button class="drum-pad" data-sound="crash" data-key="68">Crash (D)</button>
-                        <button class="drum-pad" data-sound="perc" data-key="70">Perc (F)</button>
-                        
-                        <button class="drum-pad" data-sound="perc2" data-key="90">Perc 2 (Z)</button>
-                        <button class="drum-pad" data-sound="tom" data-key="88">Tom (X)</button>
+                        <button class="drum-pad" data-sound="kick">Kick</button>
+                        <button class="drum-pad" data-sound="snare">Snare</button>
+                        <button class="drum-pad" data-sound="clap">Clap</button>
+                        <button class="drum-pad" data-sound="rim">Rim</button>
+                        <button class="drum-pad" data-sound="closed_hat">C-Hat</button>
+                        <button class="drum-pad" data-sound="open_hat">O-Hat</button>
+                        <button class="drum-pad" data-sound="crash">Crash</button>
+                        <button class="drum-pad" data-sound="perc">Perc 1</button>
+                        <button class="drum-pad" data-sound="perc2">Perc 2</button>
+                        <button class="drum-pad" data-sound="tom">Tom</button>
                     </div>
                 </section>
 
                 <section class="sequencer-container">
-                    <h3>STEP SEQUENCER</h3>
-                    <p class="legend">SWIPE UP/DOWN: Velocity • CLICK LABEL: Change Sound</p>
+                    <div class="section-header">
+                        <h3>STEP SEQUENCER</h3>
+                        <p class="legend">HOLD & SLIDE: Velocity • TAP LABEL: Change Sound</p>
+                    </div>
                     
                     <div class="sequencer-scroll-area">
                         <div class="sequencer">
-                            <div class="seq-row" data-sound="kick">
-                                <span class="row-label" title="Carica file">BD</span>
-                                <div class="steps"></div>
-                            </div>
-
-                            <div class="seq-row" data-sound="snare">
-                                <span class="row-label" title="Carica file">SD</span>
-                                <div class="steps"></div>
-                            </div>
-
-                            <div class="seq-row" data-sound="closed_hat">
-                                <span class="row-label" title="Carica file">CH</span>
-                                <div class="steps"></div>
-                            </div>
-
-                            <div class="seq-row" data-sound="open_hat">
-                                <span class="row-label" title="Carica file">OH</span>
-                                <div class="steps"></div>
-                            </div>
-
-                            <div class="seq-row" data-sound="clap">
-                                <span class="row-label" title="Carica file">CP</span>
-                                <div class="steps"></div>
-                            </div>
-
-                            <div class="seq-row" data-sound="rim">
-                                <span class="row-label" title="Carica file">RS</span>
-                                <div class="steps"></div>
-                            </div>
-
-                            <div class="seq-row" data-sound="crash">
-                                <span class="row-label" title="Carica file">CY</span>
-                                <div class="steps"></div>
-                            </div>
-
-                            <div class="seq-row" data-sound="perc">
-                                <span class="row-label" title="Carica file">PC1</span>
-                                <div class="steps"></div>
-                            </div>
-
-                            <div class="seq-row" data-sound="perc2">
-                                <span class="row-label" title="Carica file">PC2</span>
-                                <div class="steps"></div>
-                            </div>
-
-                            <div class="seq-row" data-sound="tom">
-                                <span class="row-label" title="Carica file">TM</span>
-                                <div class="steps"></div>
-                            </div>
+                            <div class="seq-row" data-sound="kick"><span class="row-label">BD</span><div class="steps"></div></div>
+                            <div class="seq-row" data-sound="snare"><span class="row-label">SD</span><div class="steps"></div></div>
+                            <div class="seq-row" data-sound="closed_hat"><span class="row-label">CH</span><div class="steps"></div></div>
+                            <div class="seq-row" data-sound="open_hat"><span class="row-label">OH</span><div class="steps"></div></div>
+                            <div class="seq-row" data-sound="clap"><span class="row-label">CP</span><div class="steps"></div></div>
+                            <div class="seq-row" data-sound="rim"><span class="row-label">RS</span><div class="steps"></div></div>
+                            <div class="seq-row" data-sound="crash"><span class="row-label">CY</span><div class="steps"></div></div>
+                            <div class="seq-row" data-sound="perc"><span class="row-label">PC1</span><div class="steps"></div></div>
+                            <div class="seq-row" data-sound="perc2"><span class="row-label">PC2</span><div class="steps"></div></div>
+                            <div class="seq-row" data-sound="tom"><span class="row-label">TM</span><div class="steps"></div></div>
                         </div>
                     </div>
                 </section>
