@@ -39,30 +39,26 @@
             </header>
 
             <main class="interface-grid">
-                <section class="pad-section">
-                    <div class="section-header">
-                        <h3>DRUM PADS</h3>
+                <div class="fixed-top-section">
+                    <section class="pad-section">
+                        <div class="drum-grid">
+                            <button class="drum-pad" data-sound="kick">Kick</button>
+                            <button class="drum-pad" data-sound="snare">Snare</button>
+                            <button class="drum-pad" data-sound="clap">Clap</button>
+                            <button class="drum-pad" data-sound="rim">Rim</button>
+                            <button class="drum-pad" data-sound="closed_hat">C-Hat</button>
+                            <button class="drum-pad" data-sound="open_hat">O-Hat</button>
+                            <button class="drum-pad" data-sound="crash">Crash</button>
+                            <button class="drum-pad" data-sound="perc">Perc 1</button>
+                        </div>
+                    </section>
+
+                    <div class="section-info">
+                        <p class="legend">DRAG STEP: Velocity • TAP LABEL: Change Sound</p>
                     </div>
-                    <div class="drum-grid">
-                        <button class="drum-pad" data-sound="kick">Kick</button>
-                        <button class="drum-pad" data-sound="snare">Snare</button>
-                        <button class="drum-pad" data-sound="clap">Clap</button>
-                        <button class="drum-pad" data-sound="rim">Rim</button>
-                        <button class="drum-pad" data-sound="closed_hat">C-Hat</button>
-                        <button class="drum-pad" data-sound="open_hat">O-Hat</button>
-                        <button class="drum-pad" data-sound="crash">Crash</button>
-                        <button class="drum-pad" data-sound="perc">Perc 1</button>
-                        <button class="drum-pad" data-sound="perc2">Perc 2</button>
-                        <button class="drum-pad" data-sound="tom">Tom</button>
-                    </div>
-                </section>
+                </div>
 
                 <section class="sequencer-container">
-                    <div class="section-header">
-                        <h3>STEP SEQUENCER</h3>
-                        <p class="legend">DRAG: Velocity • TAP LABEL: Change Sound</p>
-                    </div>
-                    
                     <div class="sequencer-scroll-area">
                         <div class="sequencer">
                             <div class="seq-row" data-sound="kick"><span class="row-label">BD</span><div class="steps"></div></div>
