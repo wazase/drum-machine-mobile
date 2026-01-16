@@ -1,23 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto+Mono:wght@400;700&display=swap');
 
-/* --- RESET TOTALE E BLOCCO INTERAZIONI DI SISTEMA --- */
+/* --- RESET E BLOCCO SISTEMA --- */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    /* Impedisce la selezione blu del testo e dei tasti */
     -webkit-user-select: none;
     user-select: none; 
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
-    /* Impedisce lo zoom ma permette lo scroll nelle aree dedicate */
-    touch-action: pan-x pan-y;
+    /* Gestione touch: disabilita lo zoom nativo per gestirlo via codice */
+    touch-action: none; 
 }
 
 html, body {
     height: 100%;
     width: 100%;
-    overflow: hidden; /* Blocca la pagina principale */
-    position: fixed; 
+    overflow: hidden;
+    position: fixed; /* Blocca il rimbalzo su iOS */
     background: #000;
 }
 
@@ -33,32 +34,33 @@ body {
     top: 0; left: 0;
     width: 100%; height: 100%;
     z-index: -10;
-    background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
 }
 
 /* --- WRAPPER E CASE --- */
 .wrapper {
     width: 100%;
     height: 100%;
-    max-width: 900px;
     display: flex;
+    justify-content: center;
+    align-items: center;
     padding: 5px;
 }
 
 .machine-case {
     position: relative;
     width: 100%;
-    height: 100%; /* Occupa tutto lo spazio disponibile */
+    height: 100%;
+    max-width: 1000px;
     background: #2b2b2b;
     border-radius: 12px;
     padding: 10px;
     display: flex;
-    flex-direction: column; /* Layout verticale */
+    flex-direction: column;
     box-shadow: 0 10px 40px rgba(0,0,0,0.9);
     border-top: 1px solid #444;
 }
 
-/* VITI */
+/* VITI ESTETICHE */
 .screw {
     position: absolute;
     width: 6px; height: 6px;
@@ -69,187 +71,118 @@ body {
 .tl { top: 6px; left: 6px; } .tr { top: 6px; right: 6px; }
 .bl { bottom: 6px; left: 6px; } .br { bottom: 6px; right: 6px; }
 
-/* --- HEADER (FISSO) --- */
+/* --- HEADER --- */
 .machine-header {
-    flex-shrink: 0; /* Non si rimpicciolisce */
+    flex-shrink: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 8px;
-    border-bottom: 2px solid #111;
     margin-bottom: 5px;
-}
-
-.brand h1 {
-    font-family: 'Orbitron', sans-serif;
-    color: #eee;
-    font-size: 1rem;
-    line-height: 1;
-}
-.sub-brand { font-size: 0.45rem; color: #777; font-weight: bold; }
-
-.lcd-display {
-    background: #000;
-    border: 1px solid #444;
-    border-radius: 4px;
-    padding: 3px;
-    display: flex;
-    gap: 5px;
-}
-
-.lcd-screen {
-    background: #151a15;
-    padding: 2px 4px;
-    border-radius: 2px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.label { font-size: 0.45rem; color: #4aff4a; }
-
-#bpmInput {
-    background: transparent;
-    border: none;
-    color: #4aff4a;
-    font-family: 'Orbitron', monospace;
-    font-size: 0.9rem;
-    width: 40px;
-    text-align: center;
-    outline: none;
-}
-
-.transport-btn {
-    padding: 5px 8px;
-    background: #d32f2f;
-    border: none;
-    border-radius: 3px;
-    color: #fff;
-    font-weight: bold;
-    font-size: 0.55rem;
-    box-shadow: 0 3px 0 #8c1b1b;
-}
-.transport-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 #8c1b1b; }
-.transport-btn.clear { background: #444; box-shadow: 0 3px 0 #222; }
-
-/* --- ZONA PAD (FISSA) --- */
-.fixed-top-section {
-    flex-shrink: 0;
-    background: #2b2b2b;
-    z-index: 5;
-}
-
-.drum-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 colonne più grandi per il tocco */
-    gap: 4px;
-    background: #1a1a1a;
-    padding: 6px;
-    border-radius: 6px;
-    margin-bottom: 5px;
-}
-
-.drum-pad {
-    aspect-ratio: 1.5/1;
-    background: #37474f;
-    border: none;
-    border-radius: 4px;
-    color: #eee;
-    font-size: 0.6rem;
-    font-weight: bold;
-    box-shadow: 0 3px 0 #1a252a;
-}
-.drum-pad.active {
-    background: #00bcd4;
-    transform: translateY(2px);
-    box-shadow: 0 1px 0 #1a252a;
-}
-
-.section-info {
-    padding: 2px 0;
+    padding-bottom: 5px;
     border-bottom: 1px solid #111;
 }
-.legend { font-size: 0.5rem; color: #666; text-align: center; font-weight: bold; }
 
-/* --- SEQUENCER (UNICA AREA SCORREVOLE) --- */
+.brand h1 { font-family: 'Orbitron'; color: #eee; font-size: 1rem; line-height: 1; }
+.sub-brand { font-size: 0.45rem; color: #777; font-weight: bold; display: block; }
+
+.lcd-display { background: #000; border: 1px solid #444; border-radius: 4px; padding: 4px; display: flex; gap: 5px; }
+.lcd-screen { background: #151a15; padding: 2px 4px; border-radius: 2px; text-align: center; }
+.label { font-size: 0.4rem; color: #4aff4a; display: block; }
+
+#bpmInput { background: transparent; border: none; color: #4aff4a; font-family: 'Orbitron'; font-size: 0.9rem; width: 40px; text-align: center; outline: none; }
+
+.transport-controls { display: flex; gap: 3px; }
+.transport-btn { padding: 6px 8px; border: none; border-radius: 3px; color: #fff; font-weight: bold; font-size: 0.6rem; box-shadow: 0 3px 0 #111; }
+.transport-btn:active { transform: translateY(2px); box-shadow: none; }
+.transport-btn.clear { background: #444; }
+.transport-btn#startStopBtn { background: #d32f2f; min-width: 55px; }
+.transport-btn.export { background: #0288d1; }
+
+/* --- INTERFACE --- */
 .interface-grid {
-    flex: 1; /* Prende tutto lo spazio rimanente */
-    display: flex;
-    flex-direction: column;
-    min-height: 0; /* Permette lo scroll interno */
-}
-
-.sequencer-container {
     flex: 1;
     display: flex;
     flex-direction: column;
     min-height: 0;
 }
 
+.fixed-top-section { flex-shrink: 0; }
+
+.drum-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    padding: 5px;
+    background: #1a1a1a;
+    border-radius: 6px;
+    margin-bottom: 5px;
+}
+
+.drum-pad {
+    aspect-ratio: 1.8/1;
+    background: #37474f;
+    border: none;
+    border-radius: 4px;
+    color: #eee;
+    font-size: 0.6rem;
+    font-weight: bold;
+    box-shadow: 0 3px 0 #111;
+}
+.drum-pad.active { background: #00bcd4; transform: translateY(2px); box-shadow: none; }
+
+.section-info { padding: 2px 0; }
+.legend { font-size: 0.5rem; color: #666; text-align: center; font-weight: bold; }
+
+/* --- SEQUENCER --- */
+.sequencer-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    background: #111;
+    border-radius: 6px;
+    padding: 4px;
+}
+
 .sequencer-scroll-area {
     flex: 1;
-    overflow-y: auto; /* Scroll verticale per le tracce */
-    overflow-x: auto; /* Scroll orizzontale per gli step */
-    -webkit-overflow-scrolling: touch;
-    padding-right: 5px;
+    overflow-y: auto;
+    overflow-x: auto;
+    touch-action: pan-x pan-y; /* Permette lo scroll del sequencer ma blocca il resto */
 }
 
-/* Nasconde la scrollbar ma mantiene la funzionalità */
-.sequencer-scroll-area::-webkit-scrollbar {
-    display: none;
-}
+/* Nasconde scrollbar */
+.sequencer-scroll-area::-webkit-scrollbar { display: none; }
 
-.sequencer {
-    min-width: 620px; /* Larghezza minima per gli step */
-}
+.sequencer { min-width: 650px; }
 
-.seq-row {
-    display: flex;
-    align-items: center;
-    height: 38px; /* Altezza fissa generosa per il tocco */
-    margin-bottom: 3px;
-}
+.seq-row { display: flex; align-items: center; height: 35px; margin-bottom: 2px; }
 
 .row-label {
-    width: 38px;
-    min-width: 38px;
-    height: 100%;
-    font-size: 0.7rem;
-    color: #ff9800;
-    font-weight: bold;
-    background: #222;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-right: 4px;
-    border-radius: 4px;
-    border: 1px solid #444;
+    width: 38px; min-width: 38px; height: 100%;
+    font-size: 0.65rem; color: #ff9800; font-weight: bold;
+    background: #222; display: flex; justify-content: center; align-items: center;
+    margin-right: 4px; border-radius: 3px; border: 1px solid #333;
 }
 
-.steps {
-    display: grid;
-    grid-template-columns: repeat(16, 1fr);
-    gap: 2px;
-    height: 100%;
-    flex-grow: 1;
+.steps { display: grid; grid-template-columns: repeat(16, 1fr); gap: 2px; height: 100%; flex: 1; }
+.step { height: 100%; background: #2a2a2a; border-radius: 2px; }
+.step.beat-marker { background: #3a3a3a; }
+.step.playhead { box-shadow: inset 0 0 0 1.5px #fff; z-index: 2; }
+
+/* --- ORIENTAMENTO ORIZZONTALE (LANDSCAPE) --- */
+@media (orientation: landscape) and (max-height: 500px) {
+    .machine-case { flex-direction: row; flex-wrap: wrap; padding: 5px; }
+    .machine-header { width: 100%; margin-bottom: 2px; }
+    .fixed-top-section { width: 30%; height: calc(100% - 40px); }
+    .drum-grid { grid-template-columns: repeat(2, 1fr); height: 90%; margin-bottom: 0; }
+    .sequencer-container { width: 70%; height: calc(100% - 40px); margin-top: 0; margin-left: 5px; }
+    .drum-pad { aspect-ratio: auto; height: 100%; }
+    .seq-row { height: 28px; }
+    .legend { font-size: 0.45rem; }
 }
 
-.step {
-    height: 100%;
-    background: #333;
-    border-radius: 3px;
-    transition: background 0.1s;
-}
-
-.step.beat-marker { background: #444; }
-
-.step.playhead {
-    box-shadow: inset 0 0 0 1.5px #fff, 0 0 12px rgba(255,255,255,0.6);
-    z-index: 2;
-}
-
-/* --- RESPONSIVITÀ PER IPHONE/ANDROID --- */
+/* Fix iOS Zoom su input */
 @media (max-width: 600px) {
-    .machine-case { border-radius: 0; }
-    input[type="number"] { font-size: 16px !important; } /* Evita zoom su iOS */
+    input[type="number"] { font-size: 16px !important; }
 }
